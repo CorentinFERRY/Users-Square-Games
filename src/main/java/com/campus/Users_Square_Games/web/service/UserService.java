@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface UserService {
     User createUser(User user);
-    Optional<User> getUserById(Long id);
-    void deletedUser(Long id);
-    boolean userExists(Long id);
+    Optional<User> getUserById(String id);
+    void deletedUser(String id);
+    boolean userExists(String id);
 }

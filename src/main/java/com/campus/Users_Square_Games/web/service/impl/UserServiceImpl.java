@@ -22,17 +22,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getUserById(Long id) {
+    public Optional<User> getUserById(String id) {
         return userRepository.findById(id);
     }
 
     @Override
-    public void deletedUser(Long id) {
+    public void deletedUser(String id) {
         userRepository.deleteById(id);
     }
 
     @Override
-    public boolean userExists(Long id) {
+    public boolean userExists(String id) {
         return userRepository.existsById(id);
     }
 }
