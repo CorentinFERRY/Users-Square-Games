@@ -1,5 +1,6 @@
 package com.campus.Users_Square_Games.web.security;
 
+import com.campus.Users_Square_Games.web.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class JwtService {
@@ -21,14 +21,18 @@ public class JwtService {
     private long expiration;
 
     // Génère le token à partir du username et du rôle
-    public String generateToken(String username, List<String> roles){
+    public String generateToken(User user) {
         return Jwts.builder()
-                .subject(username)
-                .claim("roles", roles)
+                .subject(user.getUsername())
+                .claim("userId", user.getId())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    public long getExpirationTime() {
+        return expiration;
     }
 
     // Récupère le Username depuis le Token
