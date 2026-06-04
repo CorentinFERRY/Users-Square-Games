@@ -19,6 +19,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    // GET /users/me - route de test connexion utilisateur
     @GetMapping("/me")
     @PreAuthorize("hasAuthority('ROLE_ADMIN') or #id == authentication.principal.id")
     public String me(Authentication authentication) {
