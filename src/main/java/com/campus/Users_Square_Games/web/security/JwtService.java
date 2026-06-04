@@ -6,10 +6,12 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.function.Function;
 
 @Service
 public class JwtService {
@@ -25,6 +27,7 @@ public class JwtService {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("userId", user.getId())
+                .claim("role", user.getRole().name())
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())
@@ -37,16 +40,27 @@ public class JwtService {
 
     // Récupère le Username depuis le Token
     public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
+    }
+
+    // Vérifie que le token est valide
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
     // Vérifie que le token n'est pas expiré
-    public boolean isTokenValid(String token) {
-        try {
-            return !extractAllClaims(token).getExpiration().before(new Date());
-        } catch (Exception e) {
-            return false;
-        }
+    private boolean isTokenExpired(String token) {
+        return extractExpiration(token).before(new Date());
+    }
+
+    // Recupère la date d'expiration du Token
+    private Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
     }
 
     // Permet de lire toutes les données dans le token
@@ -56,6 +70,12 @@ public class JwtService {
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
+    }
+
+    // Permet de lire une donnée précise dans le token
+    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
+        final Claims claims = extractAllClaims(token);
+        return claimsResolver.apply(claims);
     }
 
     // Converti la clé secrète
